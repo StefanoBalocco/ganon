@@ -26,16 +26,25 @@ if (!function_exists('file_put_contents')) {
         }
     }
 }
- 
+
+/*
+ * Allow console run.
+ */
+
+if((!isset($_GET)||!array_key_exists('v',$_GET))&&isset($argv))
+{
+	parse_str(implode('&',array_slice($argv, 1)),$_GET);
+}
+
 if (isset($_GET['v'])) {
 
 	$php4 = ($_GET['v'] == 4);
 	if ($php4) {
 		$file_tpl = 'ganon_tpl.php4';
-		$file_out = '../../tags/php4/ganon.php4';
+		$file_out = '../build/php4/ganon.php4';
 	} else {
 		$file_tpl = 'ganon_tpl.php5';
-		$file_out = '../../tags/php5/ganon.php';
+		$file_out = '../build/php5/ganon.php';
 	}
 
 	$constants = array();
