@@ -1,7 +1,7 @@
 <?php
 /**
  * Ganon single file version - modified for PHP4
- * Generated on 3 Sep 2013
+ * Generated on 7 Sep 2013
  *
  * @author Niels A.D.
  * @package Ganon
@@ -972,7 +972,7 @@ class HTML_Node {
 		if ($attributes) {
 			$s .= $this->toString_attributes();
 		}
-		if ($this->self_close) {
+		if ($this->self_close)) {
 			$s .= $this->self_close_str.'>';
 		} else {
 			$s .= '>';
@@ -1293,6 +1293,10 @@ class HTML_Node {
 			array_splice($this->children, $offset++, 0, array(&$tag));
 		} else {
 			$this->children[] =& $tag;
+		}
+		if($this->self_close && !empty($this->children))
+		{
+			$this->self_close = false;
 		}
 		return $tag;
 	}
