@@ -383,7 +383,7 @@ class HTML_Node {
 		if ($attributes) {
 			$s .= $this->toString_attributes();
 		}
-		if ($this->self_close)) {
+		if ($this->self_close) {
 			$s .= $this->self_close_str.'>';
 		} else {
 			$s .= '>';
