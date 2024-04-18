@@ -333,11 +333,16 @@ class HTML_Node {
 	 */
 	protected function toString_attributes() {
 		$s = '';
-		foreach($this->attributes as $a => $v) {
-			$s .= ' '.$a;
-			if ((!$this->attribute_shorttag) || ($v !== $a)) {
-				$quote = (strpos($v, '"') === false) ? '"' : "'";
-				$s .= '='.$quote.$v.$quote;
+		/*
+		 * Fix in case of nulled array
+		 */
+		if(is_array($this->attributes)){
+			foreach($this->attributes as $a => $v) {
+				$s .= ' '.$a;
+				if ((!$this->attribute_shorttag) || ($v !== $a)) {
+					$quote = (strpos($v, '"') === false) ? '"' : "'";
+					$s .= '='.$quote.$v.$quote;
+				}
 			}
 		}
 		return $s;
@@ -986,6 +991,9 @@ class HTML_Node {
 			$this->children[] =& $tag;
 		}
 
+		if($this->self_close && !empty($this->children)) {
+			$this->self_close = false;
+		}
 		return $tag;
 	}
 
@@ -1472,7 +1480,10 @@ class HTML_Node {
 		}
 		$class = $this->class;
 		foreach ($className as $c) {
-			$class = reg_replace('`\b'.preg_quote($c).'\b`si', '', $class);
+			/*
+			 * Fix for leftover spaces during class removal
+			 */
+			$class = rtrim(preg_replace('`\b'.preg_quote($c).'\b\s?`si', '', $class));
 		}
 		if ($class) {
 			$this->class = $class;

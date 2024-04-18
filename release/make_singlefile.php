@@ -26,7 +26,55 @@ if (!function_exists('file_put_contents')) {
         }
     }
 }
+
+if (!function_exists('create_function')) {
+    function create_function($arg, $body) {
+        static $cache          = []; // A static array used to store previously created functions.
+        static $max_cache_size = 64; // The maximum size of the cache.
+        static $sorter; // A callback function used to sort the cache by hit count.
  
+        if ( $sorter === null ) {
+            // Define the sorter callback function.
+            $sorter = function ( $a, $b ) {
+                if ( $a->hits == $b->hits ) {
+                    return 0;
+                }
+                return $a->hits < $b->hits ? 1 : -1;
+            };
+        }
+ 
+        // Generate a unique key for the current function.
+        $crc = crc32( $arg . "\\x00" . $body );
+        if ( isset( $cache[$crc] ) ) {
+            // If the function has already been created and cached, increment the hit count and return the cached function.
+            ++$cache[$crc][1];
+            return $cache[$crc][0];
+        }
+ 
+        if ( sizeof( $cache ) >= $max_cache_size ) {
+            // If the cache size limit is reached, sort the cache by hit count and remove the least-used function.
+            uasort( $cache, $sorter );
+            array_pop( $cache );
+        }
+ 
+        // Create a new anonymous function using `eval` and store it in the cache along with a hit count of 0.
+        $cache[$crc] = [
+            ( $cb = eval( "return function(" . $arg . "){" . $body . "};" ) ),
+            0,
+        ];
+        return $cb;
+    }
+}
+ 
+/*
+ * Allow console run.
+ */
+
+if((!isset($_GET)||!array_key_exists('v',$_GET))&&isset($argv))
+{
+	parse_str(implode('&',array_slice($argv, 1)),$_GET);
+}
+
 if (isset($_GET['v'])) {
 
 	$php4 = ($_GET['v'] == 4);
@@ -69,10 +117,10 @@ if (isset($_GET['v'])) {
 								if (($token[1][4] === '4') === $php4) {
 									$do_output = true;//($token[1][5] !== 'e');
 								} else {
-									$do_output = ($token[1][5] === 'e');
+									$do_output = isset($token[1][5])&&($token[1][5] === 'e');
 								}
 							} elseif ($token[1][1] === '!') {
-								$do_output = ($token[1][2] !== '!');
+								$do_output = empty($token[1][2])||($token[1][2] !== '!');
 							} elseif($do_output) {
 								$new_tokens = token_get_all('<?php '.substr($token[1], 1));
 								array_splice($tokens, $i, 1, $new_tokens);
